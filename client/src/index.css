@@ -1,0 +1,7 @@
+@import "tailwindcss";
+/* This forces the Urbanist font on the entire app */
+body {
+  font-family: "Urbanist", sans-serif;
+  background-color: #111827; /* Matches bg-gray-900 */
+  color: white;
+}

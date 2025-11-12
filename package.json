@@ -1,0 +1,32 @@
+{
+  "name": "seenit",
+  "version": "1.0.0",
+  "description": "Submitted by: **Carlo Ace Sagad, Jose Huertero, Arunavo Chowdhury**",
+  "main": "index.js",
+  "scripts": {
+    "dev-client": "cd client && npm run dev",
+    "dev-server": "nodemon server/server.js",
+    "dev": "concurrently \"npm:dev-client\" \"npm:dev-server\"",
+    "reset-db": "node --require dotenv/config server/config/reset.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/carloace16/watched-media-tracker.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/carloace16/watched-media-tracker/issues"
+  },
+  "homepage": "https://github.com/carloace16/watched-media-tracker#readme",
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "concurrently": "^9.2.1",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "nodemon": "^3.1.11",
+    "pg": "^8.16.3"
+  }
+}

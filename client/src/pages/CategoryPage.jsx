@@ -1,78 +1,101 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+// These import lines are now fixed (no '_')
+import { Link, useParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import {
-  fetchCategories,
-  createCategory,
-  deleteCategory,
-  updateCategory,
+  fetchCategoryById,
+  fetchShowsByCategoryId,
+  createShow,
+  updateShow,
+  deleteShow,
 } from "../services/api";
 
-const Dashboard = () => {
+const CategoryPage = () => {
   const { user } = useAuth();
-  const [categories, setCategories] = useState([]);
+  const { id: categoryId } = useParams(); // Get the category ID from the URL
 
-  // State for creating a new category
+  const [category, setCategory] = useState(null);
+  const [shows, setShows] = useState([]);
+
   const [isCreating, setIsCreating] = useState(false);
-  const [newCategory, setNewCategory] = useState({ name: "", image_url: "" });
+  const [newShow, setNewShow] = useState({
+    title: "",
+    description: "",
+    cover_image_url: "",
+  });
 
-  // State for editing
   const [editingId, setEditingId] = useState(null);
-  const [editForm, setEditForm] = useState({ name: "", image_url: "" });
+  const [editForm, setEditForm] = useState({
+    title: "",
+    description: "",
+    cover_image_url: "",
+  });
 
-  // Fetch categories only when the user object is available
+  // Fetch both the category's details (for the title) and the shows in it
   useEffect(() => {
-    if (user && user.id) {
-      getCategories(user.id);
+    // We need to check for user AND categoryId
+    if (user && categoryId) {
+      getCategoryDetails();
+      getShows();
     }
-  }, [user]);
+  }, [user, categoryId]);
 
-  const getCategories = async (userId) => {
-    const data = await fetchCategories(userId);
-    setCategories(data);
+  const getCategoryDetails = async () => {
+    const data = await fetchCategoryById(categoryId);
+    setCategory(data);
   };
 
-  // --- CREATE HANDLERS ---
+  const getShows = async () => {
+    const data = await fetchShowsByCategoryId(categoryId);
+    setShows(data);
+  };
+
+  // --- CREATE ---
   const handleCreateSubmit = async (e) => {
     e.preventDefault();
     if (!user) return alert("You must be logged in!");
 
     const finalData = {
-      name: newCategory.name,
-      image_url:
-        newCategory.image_url ||
-        "https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?q=80&w=1000&auto=format&fit=crop",
-      user_id: user.id, // Pass the user ID
+      title: newShow.title,
+      description: newShow.description,
+      cover_image_url:
+        newShow.cover_image_url ||
+        "https://images.unsplash.com/photo-1594908900066-3f07b375b33f?q=80&w=1000&auto=format&fit=crop",
+      category_id: parseInt(categoryId), // Link it to this category
     };
 
-    const created = await createCategory(finalData);
+    const created = await createShow(finalData);
     if (created) {
-      setCategories([...categories, created]);
-      setNewCategory({ name: "", image_url: "" });
+      setShows([...shows, created]);
+      setNewShow({ title: "", description: "", cover_image_url: "" });
       setIsCreating(false);
     }
   };
 
-  // --- DELETE HANDLER ---
+  // --- DELETE ---
   const handleDelete = async (e, id) => {
     e.preventDefault();
     if (!user) return alert("You must be logged in!");
 
-    if (window.confirm("Delete this folder? This cannot be undone.")) {
-      const success = await deleteCategory(id, user.id); // Pass user ID for security
+    if (window.confirm("Delete this show and all its seasons/episodes?")) {
+      const success = await deleteShow(id);
       if (success) {
-        setCategories(categories.filter((c) => c.id !== id));
+        setShows(shows.filter((s) => s.id !== id));
       } else {
-        alert("Delete failed. You may not own this resource.");
+        alert("Delete failed.");
       }
     }
   };
 
-  // --- UPDATE HANDLERS ---
-  const startEdit = (e, category) => {
+  // --- UPDATE ---
+  const startEdit = (e, show) => {
     e.preventDefault();
-    setEditingId(category.id);
-    setEditForm({ name: category.name, image_url: category.image_url });
+    setEditingId(show.id);
+    setEditForm({
+      title: show.title,
+      description: show.description,
+      cover_image_url: show.cover_image_url,
+    });
   };
 
   const handleUpdateSubmit = async (e) => {
@@ -80,34 +103,36 @@ const Dashboard = () => {
     if (!user) return alert("You must be logged in!");
 
     const updateData = {
-      name: editForm.name,
-      image_url: editForm.image_url,
-      user_id: user.id, // Pass user ID for security
+      title: editForm.title,
+      description: editForm.description,
+      cover_image_url: editForm.cover_image_url,
+      category_id: parseInt(categoryId), // Keep it in this category
     };
 
-    const updated = await updateCategory(editingId, updateData);
+    const updated = await updateShow(editingId, updateData);
     if (updated) {
-      setCategories(categories.map((c) => (c.id === editingId ? updated : c)));
+      setShows(shows.map((s) => (s.id === editingId ? updated : s)));
       setEditingId(null);
     } else {
-      alert("Update failed. You may not own this resource.");
+      alert("Update failed.");
     }
   };
 
-  // This is the new "Empty State" component you wanted
+  // This is the "Empty State" component you asked for
   const EmptyState = () => (
     <div className="text-center py-20 px-6 bg-gray-800 rounded-2xl border-2 border-dashed border-gray-700">
       <h2 className="text-3xl font-extrabold text-white mb-4">
-        Your Library is Empty
+        This Folder is Empty
       </h2>
       <p className="text-lg text-gray-400 mb-8">
-        Get started by creating your first folder.
+        Get started by adding your first show (e.g., "Naruto") to "
+        {category?.name}".
       </p>
       <button
         onClick={() => setIsCreating(true)}
         className="bg-blue-600 hover:bg-blue-500 text-white px-8 py-3 rounded-full font-bold shadow-lg shadow-blue-500/20 transition-all transform hover:scale-105"
       >
-        + Create Your First Folder
+        + Add Your First Show
       </button>
     </div>
   );
@@ -118,46 +143,51 @@ const Dashboard = () => {
       <div className="flex flex-col md:flex-row justify-between items-center mb-10 gap-4">
         <div>
           <h1 className="text-4xl font-extrabold text-white mb-2">
-            My Library
+            {category?.name || "Loading..."}
           </h1>
-          <p className="text-gray-400">
-            Welcome back, {user?.first_name || "..."}!
-          </p>
+          <p className="text-gray-400">All shows in this folder.</p>
         </div>
         {!isCreating && (
           <button
             onClick={() => setIsCreating(true)}
             className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-full font-bold shadow-lg shadow-blue-500/20 transition-all transform hover:scale-105"
           >
-            + New Folder
+            + New Show
           </button>
         )}
       </div>
 
-      {/* Create New Folder Form (Collapsible) */}
+      {/* Create New Show Form (Collapsible) */}
       {isCreating && (
         <div className="bg-gray-800 border border-gray-700 rounded-2xl p-6 mb-10 shadow-xl animate-fade-in-down">
-          <h3 className="text-xl font-bold text-white mb-4">
-            Create New Folder
-          </h3>
+          <h3 className="text-xl font-bold text-white mb-4">Add New Show</h3>
           <form onSubmit={handleCreateSubmit} className="space-y-4">
             <input
               type="text"
-              placeholder="Folder Name (e.g., Anime)"
+              placeholder="Show Title (e.g., Naruto)"
               className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-blue-500 outline-none"
-              value={newCategory.name}
+              value={newShow.title}
               onChange={(e) =>
-                setNewCategory({ ...newCategory, name: e.target.value })
-              } // <-- BUG FIX HERE (was e.TA.value)
+                setNewShow({ ...newShow, title: e.target.value })
+              }
               required
+            />
+            <input
+              type="text"
+              placeholder="Description"
+              className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-blue-500 outline-none"
+              value={newShow.description}
+              onChange={(e) =>
+                setNewShow({ ...newShow, description: e.target.value })
+              }
             />
             <input
               type="text"
               placeholder="Cover Image URL (Paste a link)"
               className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-blue-500 outline-none"
-              value={newCategory.image_url}
+              value={newShow.cover_image_url}
               onChange={(e) =>
-                setNewCategory({ ...newCategory, image_url: e.target.value })
+                setNewShow({ ...newShow, cover_image_url: e.target.value })
               }
             />
             <div className="flex gap-4">
@@ -165,7 +195,7 @@ const Dashboard = () => {
                 type="submit"
                 className="flex-1 bg-green-600 hover:bg-green-500 text-white font-bold rounded-lg py-3 transition-colors"
               >
-                Create
+                Create Show
               </button>
               <button
                 type="button"
@@ -179,31 +209,43 @@ const Dashboard = () => {
         </div>
       )}
 
-      {/* Folders Grid - Larger, as requested */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-        {categories.map((category) => (
-          <div key={category.id} className="relative group">
-            {editingId === category.id ? (
+      {/* Shows Grid (Netflix Style) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+        {shows.map((show) => (
+          <div key={show.id} className="relative group">
+            {editingId === show.id ? (
               // --- EDIT MODE CARD ---
               <div className="bg-gray-800 rounded-2xl p-4 h-80 flex flex-col justify-center gap-3 border-2 border-blue-500 shadow-xl">
                 <h3 className="text-white font-bold mb-2 text-center">
-                  Edit Folder
+                  Edit Show
                 </h3>
                 <input
                   type="text"
                   className="p-2 bg-gray-700 rounded text-white text-sm w-full"
-                  value={editForm.name}
+                  value={editForm.title}
                   onChange={(e) =>
-                    setEditForm({ ...editForm, name: e.target.value })
+                    setEditForm({ ...editForm, title: e.target.value })
+                  }
+                />
+                <input
+                  type="text"
+                  className="p-2 bg-gray-700 rounded text-white text-sm w-full"
+                  placeholder="Description"
+                  value={editForm.description}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, description: e.target.value })
                   }
                 />
                 <input
                   type="text"
                   className="p-2 bg-gray-700 rounded text-white text-sm w-full"
                   placeholder="Image URL"
-                  value={editForm.image_url}
+                  value={editForm.cover_image_url}
                   onChange={(e) =>
-                    setEditForm({ ...editForm, image_url: e.target.value })
+                    setEditForm({
+                      ...editForm,
+                      cover_image_url: e.target.value,
+                    })
                   }
                 />
                 <div className="flex gap-2 mt-2">
@@ -224,39 +266,33 @@ const Dashboard = () => {
             ) : (
               // --- VIEW MODE CARD (Netflix Style) ---
               <Link
-                to={`/category/${category.id}`}
+                to={`/show/${show.id}`}
                 className="block h-80 rounded-2xl overflow-hidden shadow-lg relative transform transition-all duration-300 hover:scale-105 hover:shadow-blue-500/20"
               >
-                {/* Background Image */}
                 <div
                   className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110"
-                  style={{ backgroundImage: `url(${category.image_url})` }}
+                  style={{ backgroundImage: `url(${show.cover_image_url})` }}
                 />
-
-                {/* Gradient Overlay */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
-
-                {/* Content */}
                 <div className="absolute bottom-0 left-0 w-full p-6">
                   <h3 className="text-3xl font-extrabold text-white mb-2">
-                    {category.name}
+                    {show.title}
                   </h3>
                   <p className="text-blue-400 text-sm font-medium group-hover:text-blue-300 transition-colors">
-                    View Collection &rarr;
+                    View Seasons &rarr;
                   </p>
                 </div>
 
-                {/* NEW Edit/Delete Buttons - Bigger and clearer */}
                 <div className="absolute top-4 right-4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                   <button
-                    onClick={(e) => startEdit(e, category)}
+                    onClick={(e) => startEdit(e, show)}
                     className="py-2 px-4 bg-black/70 hover:bg-blue-600 rounded-full text-white backdrop-blur-sm transition-colors text-sm font-medium"
                     title="Edit"
                   >
                     Edit
                   </button>
                   <button
-                    onClick={(e) => handleDelete(e, category.id)}
+                    onClick={(e) => handleDelete(e, show.id)}
                     className="py-2 px-4 bg-black/70 hover:bg-red-600 rounded-full text-white backdrop-blur-sm transition-colors text-sm font-medium"
                     title="Delete"
                   >
@@ -269,10 +305,10 @@ const Dashboard = () => {
         ))}
       </div>
 
-      {/* Show the EmptyState message if user is logged in and has no categories */}
-      {user && categories.length === 0 && !isCreating && <EmptyState />}
+      {/* Show the EmptyState message if user is logged in and has no shows */}
+      {user && shows.length === 0 && !isCreating && <EmptyState />}
     </div>
   );
 };
 
-export default Dashboard;
+export default CategoryPage;

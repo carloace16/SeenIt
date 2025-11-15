@@ -9,19 +9,13 @@ import {
 
 const router = express.Router();
 
-// GET all categories
-router.get("/", getAllCategories);
+// --- THIS LINE IS UPDATED ---
+router.get("/user/:user_id", getAllCategories); // Now gets categories for a specific user
+// -----------------------------
 
-// GET a single category by its ID
 router.get("/:id", getCategoryById);
-
-// POST (create) a new category
 router.post("/", createCategory);
-
-// PATCH (update) an existing category
-router.patch("/:id", updateCategory); // Using PATCH for updates
-
-// DELETE an existing category
+router.patch("/:id", updateCategory);
 router.delete("/:id", deleteCategory);
 
 export default router;

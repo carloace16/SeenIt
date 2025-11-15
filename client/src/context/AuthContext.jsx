@@ -10,18 +10,29 @@ export const useAuth = () => {
 
 // 3. Create the "Provider" component that will wrap our whole app
 export const AuthProvider = ({ children }) => {
-  // We will store the logged-in user's data here
-  const [user, setUser] = useState(null);
+  // --- THIS IS THE UPDATE ---
+  // When the app first loads, check if a user is saved in localStorage
+  const [user, setUser] = useState(() => {
+    const savedUser = localStorage.getItem("seenit_user");
+    return savedUser ? JSON.parse(savedUser) : null;
+  });
+  // --------------------------
 
-  // This will be our global login function
+  // This is our global login function
   const login = (userData) => {
-    // In a real app, you'd also save a token to localStorage
+    // --- THIS IS THE UPDATE ---
+    // Save the user to localStorage to persist the session
+    localStorage.setItem("seenit_user", JSON.stringify(userData));
+    // --------------------------
     setUser(userData);
   };
 
-  // This will be our global logout function
+  // This is our global logout function
   const logout = () => {
-    // In a real app, you'd also remove the token
+    // --- THIS IS THE UPDATE ---
+    // Remove the user from localStorage
+    localStorage.removeItem("seenit_user");
+    // --------------------------
     setUser(null);
   };
 

@@ -25,8 +25,9 @@ const createTables = async () => {
   const createCategoriesTableQuery = `
         CREATE TABLE IF NOT EXISTS categories (
             id serial PRIMARY KEY,
-            name varchar(100) NOT NULL UNIQUE,
-            image_url varchar(255) 
+            name varchar(100) NOT NULL,
+            image_url varchar(255),
+            user_id integer NOT NULL REFERENCES users(id) ON DELETE CASCADE
         );
     `;
   // --------------------------
@@ -37,18 +38,23 @@ const createTables = async () => {
             title varchar(255) NOT NULL,
             description text,
             cover_image_url varchar(255),
-            category_id integer REFERENCES categories(id) ON DELETE SET NULL, 
+            category_id integer REFERENCES categories(id) ON DELETE CASCADE, 
             created_at timestamp DEFAULT now()
         );
     `;
 
+  // ... (rest of the tables are the same) ...
+  // (Your reset.js file... find this function)
   const createSeasonsTableQuery = `
         CREATE TABLE IF NOT EXISTS seasons (
             id serial PRIMARY KEY,
-            season_number integer NOT NULL,
+            title varchar(255) NOT NULL,
+            season_order integer NOT NULL,
+            cover_image_url varchar(255),
             show_id integer NOT NULL REFERENCES shows(id) ON DELETE CASCADE
         );
     `;
+  // (The rest of your reset.js file stays the same for now)
 
   const createEpisodesTableQuery = `
         CREATE TABLE IF NOT EXISTS episodes (
@@ -95,34 +101,10 @@ const createTables = async () => {
   }
 };
 
-const seedData = async () => {
-  try {
-    // --- UPDATED THIS QUERY ---
-    await pool.query(`
-        INSERT INTO categories (name, image_url) VALUES 
-        ('Anime', 'https://wallpapers.com/images/hd/anime-group-cpzl2mkdxnxtwgai.jpg'), 
-        ('Netflix', 'https://i.pcmag.com/imagery/reviews/05cItXL96l4LE9n02WfDR0h-5..v1582751026.png'), 
-        ('Movies', 'https://irp.cdn-website.com/e0446a5f/dms3rep/multi/Best+of+2022+SQUARE.png')
-    `);
-    console.log("🎉 Categories seeded");
-    // --------------------------
-
-    await pool.query(`
-        INSERT INTO shows (title, description, cover_image_url, category_id) VALUES
-        ('Attack on Titan', 'Humanity fights for survival against giant man-eating titans.', 'https://static.wikia.nocookie.net/shingekinokyojin/images/d/d8/Attack_on_Titan_Season_1.jpg/revision/latest/scale-to-width-down/1200?cb=20211005182832', 1),
-        ('Stranger Things', 'A group of kids in a small town uncover supernatural mysteries.', 'https://i2.wp.com/readysteadycut.com/wp-content/uploads/2022/05/825394.jpg?fit=1920%2C1080&ssl=1', 2),
-        ('Game of Thrones', 'Noble families fight for control of the Iron Throne.', 'https://m.media-amazon.com/images/M/MV5BMTNhMDJmNmYtNDQ5OS00ODdlLWE0ZDAtZTgyYTIwNDY3OTU3XkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg', 3),
-        ('Naruto', 'A young ninja seeks recognition from his peers.', 'https://m.media-amazon.com/images/M/MV5BZTNjOWI0ZTAtOGY1OS00ZGU0LWEyOWYtMjhkYjdlYmVjMDk2XkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg', 1)
-    `);
-    console.log("🎉 Shows seeded");
-  } catch (err) {
-    console.error("⚠️ error seeding data", err);
-  }
-};
-
 const setupDatabase = async () => {
   await createTables();
-  await seedData();
+  // We no longer seed any categories or shows. Users will create their own.
+  console.log("🎉 Database setup complete. No seed data added.");
   pool.end();
 };
 

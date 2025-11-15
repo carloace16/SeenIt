@@ -1,5 +1,6 @@
 // The port your backend server is on
-const API_URL = "http://localhost:3000/api";
+// const API_URL = "http://localhost:3000/api";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
 
 // --- USER AUTH FUNCTIONS ---
 export const registerUser = async (userData) => {

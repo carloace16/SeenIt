@@ -1,5 +1,7 @@
 # SeenIt
 
+**Deployed Link:** [https://seenit-9107.onrender.com](https://seenit-9107.onrender.com)
+
 Submitted by: **Carlo Ace Sagad, Jose Huertero, Arunavo Chowdhury**
 
 ## Description and Purpose
@@ -12,45 +14,30 @@ SeenIt provides a centralized, beautiful interface to create "folders" for your 
 
 We often lose track of which season or episode we last watched, especially for ongoing series or anime with many installments. Existing apps can sometimes be overly complex, focused on only one type of media, or lack the specific tracking features we want. We were inspired to create a simple, focused, and visually appealing tool to solve this common problem for ourselves and others who consume a lot of media.
 
-## Feature List
+## Final GIF Walkthrough
 
-Below is a list of the features we plan to implement for the final project.
+Here is a complete walkthrough of the application's core features, from registration to marking an episode as watched.
 
-### ✅ Completed Features (Milestone 3)
-
-**✅ Full User Authentication & Dashboard Foundation**
-
-- **Landing, Login, & Register Pages:** A full-featured user authentication flow. Users can register for a new account (with hashed passwords) or log in on a premium, themed page.
-- **Smart, Themed Navigation:** The navbar and footer are styled to match the app's theme and are "smart" — they show different links based on whether the user is logged in or out.
-- **Category (Folder) Dashboard:** After logging in, the user is taken to their main dashboard. This page displays their "folders" (categories) as a grid of themed cards with image backgrounds.
-- **Full Category CRUD:** Users can create new folders (with a name and image URL), edit a folder's details, and delete folders directly from the dashboard.
-
-**GIF Walkthrough of these features:**
-_(This GIF shows the auth flow and the dashboard's CRUD functionality)_
-<img src="./Week%208%20GIF.gif" title="Milestone 3 Walkthrough" width="" alt="Video Walkthrough" />
+<img src="./Big%20GIF.gif" title="Final Project Walkthrough" width="" alt="Video Walkthrough" />
 
 ---
 
-### Baseline Features (In Progress):
+## Feature List
 
-- **View Tracked Shows:** Users can view a list/grid of all the shows, anime, or movies they have added to their tracking list. (GET all user's tracked items)
-- **Add New Show:** Users can add a new show/movie to their tracked list (initially perhaps via manual entry, potentially later via external API search). (POST a new tracked item relationship)
-- **View Show Details:** Users can click on a show to see more details, including a description, cover image, and a list of its seasons/episodes. (GET show by ID, Frontend Route)
-- **Mark as Watched/Unwatched:** Users can mark individual seasons or episodes as watched or unwatched. The interface updates instantly. (PATCH/POST on `user_watched_status`, Frontend Interaction)
-- **Remove Show:** Users can remove a show entirely from their tracked list. (DELETE a tracked item relationship)
-- ✅ **Database Relationships:** Implemented a relational schema with Users, Shows, Seasons, Episodes, and a `user_watched_log` join table.
-- ✅ **Database Reset Script:** Includes a script to reset the database tables to their initial state with seeded data.
-- ✅ **RESTful API:** Backend API follows REST principles with full CRUD for Categories and Users.
-- ✅ **React Frontend:** Use React with React Router for frontend navigation and component hierarchy.
-- **Deployment:** Deploy the final application to Render.
+### ✅ Completed Features
 
-### Custom Features (In Progress):
-
-- **Filter Tracked List:** Users can filter their tracked list by platform (e.g., Netflix, Crunchyroll) or genre. (Custom Feature #1 - Filter/Sort)
-- ✅ **Track Watched Date:** The `user_watched_log` join table includes a `watched_date` column, recording when the user marked an item as watched. (Custom Feature #2 - Unique Field in Join Table)
-
-### Stretch Features (Potential Ideas):
-
-- Integrate with an external API (like TMDB or TVMaze) to automatically fetch show details and episode lists.
-- Add a user rating system for watched shows/episodes.
-- Display progress bars for partially watched seasons.
+- **Full User Authentication:** Full-featured flow with a themed Landing Page, Login Page, and Register Page. User passwords are fully hashed and secured.
+- **Persistent Login:** The app uses a global React Context and `localStorage` to keep users logged in, even after reloading the page.
+- **Smart, Themed Navigation:** The navbar and footer are styled with Tailwind and are "smart" — they show different links based on whether the user is logged in or out.
+- **Full CRUD for Categories (Folders):** After logging in, users see a dashboard of their media "folders" (e.g., "Anime", "Netflix"). They can create, edit, and delete these folders, including adding a custom image URL.
+- **Full CRUD for Shows:** Users can click a category to see all the "shows" inside it. They can create, edit, and delete shows (e.g., "Naruto") and add a cover image URL.
+- **Full CRUD for Seasons:** Users can click a show to see all its "seasons" or movies. They can create, edit, and delete seasons (e.g., "Season 1", "Shippuden") and add a cover image URL.
+- **Full CRUD for Episodes:** Users can click a season to see all its episodes. They can create, edit, and delete individual episodes (e.g., "Episode 1: Enter Naruto!").
+- **Core "Watch Log" Feature:** On the episodes page, users can click a checkbox to "mark as watched." This status is toggled in the database and updates instantly on the UI.
+- **Relational Database:** Full PostgreSQL database with a normalized schema, including `users`, `categories`, `shows`, `seasons`, `episodes`, and a `user_watched_log` join table.
+- **Full RESTful API:** A complete backend Express API with full CRUD endpoints for all data models, following RESTful conventions.
+- **Database Reset Script:** Includes an `npm run reset-db` script to fully wipe and rebuild the database schema.
+- **Custom API Route:** A custom non-RESTful route (`POST /api/watchlog/toggle`) that intelligently creates or deletes a "watched" status in a single call.
+- **Unique Field in Join Table:** The `user_watched_log` join table includes a `watched_date` to track _when_ a user watched an episode.
+- **Full Deployment:** Both the frontend (React) and backend (Express) are fully deployed and connected on Render.
+- **Image Pasting via URL:** Users can add custom images to folders, shows, and seasons by pasting in a URL.
